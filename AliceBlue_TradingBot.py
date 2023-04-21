@@ -19,15 +19,15 @@ class Login:
 
         """For changing the time periods change the first four and do the same for rest four"""
 
-        self.start_time_1 = datetime.strptime("10:45", "%H:%M").time()
-        self.start_time_2 = datetime.strptime("11:00", "%H:%M").time()
-        self.start_time_3 = datetime.strptime("11:15", "%H:%M").time()
-        self.start_time_4 = datetime.strptime("11:30", "%H:%M").time()
+        self.start_time_1 = datetime.strptime("09:30", "%H:%M").time()
+        self.start_time_2 = datetime.strptime("09:45", "%H:%M").time()
+        self.start_time_3 = datetime.strptime("10:00", "%H:%M").time()
+        self.start_time_4 = datetime.strptime("10:15", "%H:%M").time()
 
-        self.t1 = time(10, 45)
-        self.t2 = time(11, 00)
-        self.t3 = time(11, 15)
-        self.t4 = time(11, 30)
+        self.t1 = time(9, 30)
+        self.t2 = time(9, 45)
+        self.t3 = time(10, 00)
+        self.t4 = time(10, 15)
 
 
 class D_1H:
@@ -239,7 +239,7 @@ class D_1H:
             print("Error in Hist_data: ",e)
 
     def on_run(self):
-        # schedule.every().day.at(str(self.login_obj.previous_day_data)).do(self.__1d)
+        schedule.every().day.at(str(self.login_obj.previous_day_data)).do(self.__1d)
         schedule.every().day.at(str(self.login_obj.start_time_1)).do(self.__1d)
         schedule.every().day.at(str(self.login_obj.start_time_2)).do(self.__1d)
         schedule.every().day.at(str(self.login_obj.start_time_3)).do(self.__1d)
