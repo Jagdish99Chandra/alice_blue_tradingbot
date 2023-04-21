@@ -1,0 +1,5 @@
+pya3
+openpyxl
+xlwings
+pandas
+schedule
