@@ -19,8 +19,8 @@ class Login:
 
         """For changing the time periods change the first four and do the same for rest four"""
 
-        self.start_time_1 = datetime.strptime("09:30", "%H:%M").time()
-        self.start_time_2 = datetime.strptime("09:45", "%H:%M").time()
+        self.start_time_1 = datetime.strptime("9:30", "%H:%M").time()
+        self.start_time_2 = datetime.strptime("9:45", "%H:%M").time()
         self.start_time_3 = datetime.strptime("10:00", "%H:%M").time()
         self.start_time_4 = datetime.strptime("10:15", "%H:%M").time()
 
@@ -97,6 +97,9 @@ class D_1H:
 
                 except:
                     pass
+                # print(self.lp_data)
+
+        # Socket Connection Request
         self.login_obj.alice.start_websocket(socket_open_callback=socket_open, socket_close_callback=socket_close,
                               socket_error_callback=socket_error, subscription_callback=feed_data,
                               run_in_background=True, market_depth=False)
@@ -113,10 +116,14 @@ class D_1H:
         self.token_value = []
         for s in sym:
             self.subscribe_list = [self.login_obj.alice.get_instrument_by_symbol('NSE', s)]
+            # print(self.subscribe_list)
             self.token_value.append(self.subscribe_list[0].token)
 
             self.login_obj.alice.subscribe(self.subscribe_list)
             sleep(3)
+        # print(self.token_value)
+
+        ##Program ko close nahi karna hai loop chalte renehe dena hai
         while True:
             pass
     def ltp_to_excel(self):
@@ -153,24 +160,32 @@ class D_1H:
             ws = wb.sheets['LiveData']
             stk_data = pd.DataFrame()
 
+            # print(sym)
             self.sym["9:30"] = sym
             print(self.sym["9:30"])
 
             for symbol in sym:
+                # print(symbol)
                 if (datetime.now().time() >= time(9, 30)) and (datetime.now().time() <= time(15,10)):
                     instrument = alice.get_instrument_by_symbol("NSE", symbol)
+                    # print(instrument)
                     from_datetime = datetime.now() - timedelta(days=1)
                     to_datetime = datetime.now()
                     interval = "1"  # ["1", "D"]
                     indices = False
                     df = alice.get_historical(instrument, from_datetime, to_datetime, interval, indices)
+                    # print(df)
                     df.drop(["volume"], axis=1, inplace=True)
                     df['datetime'] = pd.to_datetime(df['datetime'])
                     df.set_index("datetime", inplace=True)
                     df.index = pd.to_datetime(df.index)
+                    # print(df)
                     df_15min = df.resample('15T').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})
                     df_15min.drop(["open", "close"], axis=1, inplace=True)
                     df_15min = df_15min.iloc[-1]
+                    # print(df_15min)
+                    # df_15min = df_15min.transpose()
+                    # print(df_15min)
                     print("CheckPoint-1")
                     stk_data = pd.concat([stk_data, df_15min], axis=1)
                 else:
@@ -180,14 +195,19 @@ class D_1H:
                     interval = "D"  # ["1", "D"]
                     indices = False
                     df = alice.get_historical(instrument, from_datetime, to_datetime, interval, indices)
+                    # print(type(df))
                     df.drop(["volume"], axis=1, inplace=True)
                     df['datetime'] = pd.to_datetime(df['datetime'])
                     df.set_index("datetime", inplace=True)
                     df.index = pd.to_datetime(df.index)
+                    # df_15min = df.resample('15T').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})
                     df = df.iloc[-1]
                     print(df)
+
+                    # stk_data = pd.concat([stk_data, df_15min], axis=1)
                     stk_data = pd.concat([stk_data, df], axis=1)
             now = datetime.now().strftime("%H:%M")
+            # print(now)
             target_time = self.login_obj.start_time_1
             if datetime.strptime(now, "%H:%M").time() == target_time:
                 stk_data = stk_data.transpose()
@@ -219,7 +239,7 @@ class D_1H:
             print("Error in Hist_data: ",e)
 
     def on_run(self):
-        schedule.every().day.at(str(self.login_obj.previous_day_data)).do(self.__1d)
+        # schedule.every().day.at(str(self.login_obj.previous_day_data)).do(self.__1d)
         schedule.every().day.at(str(self.login_obj.start_time_1)).do(self.__1d)
         schedule.every().day.at(str(self.login_obj.start_time_2)).do(self.__1d)
         schedule.every().day.at(str(self.login_obj.start_time_3)).do(self.__1d)
@@ -1205,8 +1225,6 @@ class Time:
         now_str = now.strftime('%H:%M:%S')
         self.ws.range('B1').value = now_str
         self.ws.range('B1').number_format = 'hh:mm:ss'
-
-
 
 time_obj = Time()
 
