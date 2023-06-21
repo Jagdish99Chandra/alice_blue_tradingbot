@@ -97,9 +97,6 @@ class D_1H:
 
                 except:
                     pass
-                # print(self.lp_data)
-
-        # Socket Connection Request
         self.login_obj.alice.start_websocket(socket_open_callback=socket_open, socket_close_callback=socket_close,
                               socket_error_callback=socket_error, subscription_callback=feed_data,
                               run_in_background=True, market_depth=False)
@@ -116,14 +113,10 @@ class D_1H:
         self.token_value = []
         for s in sym:
             self.subscribe_list = [self.login_obj.alice.get_instrument_by_symbol('NSE', s)]
-            # print(self.subscribe_list)
             self.token_value.append(self.subscribe_list[0].token)
 
             self.login_obj.alice.subscribe(self.subscribe_list)
             sleep(3)
-        # print(self.token_value)
-
-        ##Program ko close nahi karna hai loop chalte renehe dena hai
         while True:
             pass
     def ltp_to_excel(self):
@@ -160,32 +153,24 @@ class D_1H:
             ws = wb.sheets['LiveData']
             stk_data = pd.DataFrame()
 
-            # print(sym)
             self.sym["9:30"] = sym
             print(self.sym["9:30"])
 
             for symbol in sym:
-                # print(symbol)
                 if (datetime.now().time() >= time(9, 30)) and (datetime.now().time() <= time(15,10)):
                     instrument = alice.get_instrument_by_symbol("NSE", symbol)
-                    # print(instrument)
                     from_datetime = datetime.now() - timedelta(days=1)
                     to_datetime = datetime.now()
                     interval = "1"  # ["1", "D"]
                     indices = False
                     df = alice.get_historical(instrument, from_datetime, to_datetime, interval, indices)
-                    # print(df)
                     df.drop(["volume"], axis=1, inplace=True)
                     df['datetime'] = pd.to_datetime(df['datetime'])
                     df.set_index("datetime", inplace=True)
                     df.index = pd.to_datetime(df.index)
-                    # print(df)
                     df_15min = df.resample('15T').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})
                     df_15min.drop(["open", "close"], axis=1, inplace=True)
                     df_15min = df_15min.iloc[-1]
-                    # print(df_15min)
-                    # df_15min = df_15min.transpose()
-                    # print(df_15min)
                     print("CheckPoint-1")
                     stk_data = pd.concat([stk_data, df_15min], axis=1)
                 else:
@@ -195,45 +180,40 @@ class D_1H:
                     interval = "D"  # ["1", "D"]
                     indices = False
                     df = alice.get_historical(instrument, from_datetime, to_datetime, interval, indices)
-                    # print(type(df))
                     df.drop(["volume"], axis=1, inplace=True)
                     df['datetime'] = pd.to_datetime(df['datetime'])
                     df.set_index("datetime", inplace=True)
                     df.index = pd.to_datetime(df.index)
-                    # df_15min = df.resample('15T').agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})
                     df = df.iloc[-1]
                     print(df)
-
-                    # stk_data = pd.concat([stk_data, df_15min], axis=1)
                     stk_data = pd.concat([stk_data, df], axis=1)
             now = datetime.now().strftime("%H:%M")
-            # print(now)
             target_time = self.login_obj.start_time_1
             if datetime.strptime(now, "%H:%M").time() == target_time:
                 stk_data = stk_data.transpose()
                 print(stk_data)
-                ws.range("J3").options(index=False).value = stk_data
+                ws.range("J4").options(index=False, header=False).value = stk_data
                 wb.save()
                 self.data_placer_1 = True
             target_time = self.login_obj.start_time_2
             if datetime.strptime(now, "%H:%M").time() == target_time:
                 stk_data = stk_data.transpose()
                 print(stk_data)
-                ws.range("L3").options(index=False).value = stk_data
+                ws.range("L4").options(index=False, header=False).value = stk_data
                 wb.save()
                 self.data_placer_2 = True
             target_time = self.login_obj.start_time_3
             if datetime.strptime(now, "%H:%M").time() == target_time:
                 stk_data = stk_data.transpose()
                 print(stk_data)
-                ws.range("N3").options(index=False).value = stk_data
+                ws.range("N4").options(index=False, header=False).value = stk_data
                 wb.save()
                 self.data_placer_3 = True
             now = datetime.now().time()
             if now <= time(9, 30):
                 stk_data = stk_data.transpose()
                 print(stk_data)
-                ws.range("F3").options(index=False).value = stk_data
+                ws.range("F4").options(index=False, header=False).value = stk_data
                 wb.save()
         except Exception as e:
             print("Error in Hist_data: ",e)
